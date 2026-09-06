@@ -11,3 +11,14 @@ tasks:
     desc: Tear down the local kind cluster
     cmds:
       - terraform -chdir=terraform/envs/local destroy -auto-approve
+
+  build-mock-llm:
+    desc: Build the mock LLM image
+    cmds:
+      - docker build -t mock-llm:dev services/mock-llm
+
+  load-mock-llm:
+    desc: Load the mock LLM image into the kind cluster
+    deps: [build-mock-llm]
+    cmds:
+      - kind load docker-image mock-llm:dev --name kustom-ai-gateway

@@ -54,6 +54,13 @@ cluster, installs the Gateway API CRDs, and installs the agentgateway control
 plane via Terraform. The mock LLM route, guardrails service, and observability
 stack land in later steps.
 
+Point `kubectl` (and any other Kubernetes-aware tool, e.g. `k9s`) at this
+cluster for the rest of the session:
+
+```
+export KUBECONFIG="$(pwd)/terraform/envs/local/kubeconfig"
+```
+
 ```
 task down
 ```
