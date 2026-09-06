@@ -1,0 +1,11 @@
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: ollama
+spec:
+  static:
+    # host.docker.internal is a Docker Desktop mechanism (macOS/Windows) for
+    # reaching the host from inside a container. On plain Linux Docker this
+    # needs an explicit extraHosts entry on the kind node to resolve.
+    host: host.docker.internal
+    port: 11434
