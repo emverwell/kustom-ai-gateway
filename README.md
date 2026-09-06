@@ -6,8 +6,9 @@ front of an LLM backend, with a guardrails service enforcing prompt-injection
 and PII policy, all running on a single-machine [kind](https://kind.sigs.k8s.io/)
 cluster and provisioned end-to-end with Terraform.
 
-This is a portfolio project, not a product — see [`CLAUDE.md`](./CLAUDE.md) for
-the full design brief, locked stack, and step-by-step build plan.
+This is a portfolio project, not a product. See
+[`docs/decisions.md`](./docs/decisions.md) for the rationale behind the
+non-obvious architecture choices.
 
 ## Request path
 
@@ -20,8 +21,9 @@ client → agentgateway proxy ──→ guardrails webhook (Presidio + ONNX)
 
 ## Status
 
-Work in progress, built one step at a time. See the step plan in `CLAUDE.md`
-for what's done and what's next.
+Work in progress, built one step at a time. Cluster provisioning (Terraform +
+kind) is done; the gateway, guardrails service, and observability stack are
+next.
 
 ## Requirements
 
@@ -36,4 +38,12 @@ for what's done and what's next.
 task up
 ```
 
-(Not yet implemented — cluster provisioning lands in a later step.)
+Currently this provisions the two-node (`control-plane` + `worker`) kind
+cluster via Terraform. The gateway, guardrails service, and observability
+stack land in later steps.
+
+```
+task down
+```
+
+Tears the cluster down.

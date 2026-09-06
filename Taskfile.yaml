@@ -2,11 +2,12 @@ version: "3"
 
 tasks:
   up:
-    desc: Bring up the local kind cluster and full stack (not yet implemented)
+    desc: Provision the local kind cluster (rest of the stack lands in later steps)
     cmds:
-      - echo "task up: not implemented yet — see CLAUDE.md step plan"
+      - terraform -chdir=terraform/envs/local init -input=false
+      - terraform -chdir=terraform/envs/local apply -auto-approve
 
   down:
-    desc: Tear down the local stack (not yet implemented)
+    desc: Tear down the local kind cluster
     cmds:
-      - echo "task down: not implemented yet — see CLAUDE.md step plan"
+      - terraform -chdir=terraform/envs/local destroy -auto-approve

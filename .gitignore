@@ -10,6 +10,7 @@ override.tf.json
 *_override.tf.json
 
 # kind / kubeconfig
+kubeconfig
 kubeconfig*.yaml
 kind-kubeconfig*
 
@@ -30,3 +31,5 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+
+CLAUDE.md
