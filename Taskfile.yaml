@@ -1,0 +1,12 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Bring up the local kind cluster and full stack (not yet implemented)
+    cmds:
+      - echo "task up: not implemented yet — see CLAUDE.md step plan"
+
+  down:
+    desc: Tear down the local stack (not yet implemented)
+    cmds:
+      - echo "task down: not implemented yet — see CLAUDE.md step plan"
