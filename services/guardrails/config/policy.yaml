@@ -1,0 +1,51 @@
+# Per-entity guardrail policy. Entity names for EMAIL_ADDRESS, IBAN_CODE,
+# CREDIT_CARD, and PERSON match Presidio's built-in recognizers exactly, so
+# no name-mapping layer is needed. Everything else is ours: custom regex
+# recognizers built from `patterns` below at startup, one Presidio
+# recognizer per pattern (see app/pii.py for why).
+#
+# score_threshold gates which matches actually count: a pattern's `score`
+# must reach this after any context boost (Presidio adds ~0.35 when a
+# `context` word appears within a few words of the match) to be reported.
+score_threshold: 0.4
+
+entities:
+  EMAIL_ADDRESS:
+    action: redact
+  IBAN_CODE:
+    action: redact
+  CREDIT_CARD:
+    action: block
+  PERSON:
+    action: redact
+  INTERNAL_PROJECT_CODENAME:
+    action: block
+    patterns:
+      - name: nighthawk
+        regex: "(?i)\\bproject\\s+nighthawk\\b"
+        score: 0.9
+
+  # Venezuelan national ID (cedula). V-15123456 / V15123456 is unambiguous
+  # on its own. Bare digits (15123456) are too ambiguous to trust alone —
+  # score starts below the threshold and only clears it when "cedula" is
+  # mentioned nearby. The negative lookahead keeps this from also matching
+  # the cedula portion of a VE_RIF tax ID below.
+  VE_CEDULA:
+    action: redact
+    patterns:
+      - name: v_prefixed
+        regex: "(?i)\\bV-?\\d{6,8}\\b(?!-?\\d)"
+        score: 0.85
+      - name: bare_digits_with_context
+        regex: "\\b\\d{6,8}\\b"
+        score: 0.3
+        context: ["cedula", "cédula"]
+
+  # Venezuelan tax ID (RIF): a cedula plus a trailing check digit for the
+  # tax region/office, e.g. V-15123456-0 or V151234560.
+  VE_RIF:
+    action: redact
+    patterns:
+      - name: v_prefixed_with_check_digit
+        regex: "(?i)\\bV-?\\d{6,8}-?\\d\\b"
+        score: 0.85
