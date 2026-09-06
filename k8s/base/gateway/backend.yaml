@@ -1,0 +1,11 @@
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: mock-llm
+spec:
+  static:
+    # Fully-qualified: the agentgateway data-plane pod for this Gateway runs
+    # in agentgateway-system, not this namespace, so a short "mock-llm" host
+    # would resolve against the wrong namespace's DNS search domain.
+    host: mock-llm.kustom-ai-gateway.svc.cluster.local
+    port: 80
