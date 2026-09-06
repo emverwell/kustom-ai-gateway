@@ -158,3 +158,27 @@ RAM cost on top of an already-tight 8GB budget shared with guardrails, OTel,
 Prometheus, and Grafana. Recognizing that a popular pattern doesn't fit a
 single-environment ephemeral demo is itself the judgement signal this ADR is
 recording.
+
+## ADR-010: A local Ollama backend as a second, opt-in AgentgatewayBackend
+
+**Decision:** `k8s/overlays/local-ollama/` adds a second `AgentgatewayBackend`
+(`static`, pointing at `host.docker.internal:11434`) and patches the existing
+`HTTPRoute` to route `/v1/chat/completions` to it instead of `mock-llm`.
+Applying this overlay instead of `local` is the only way to activate it —
+`task up` and the default `local` overlay never touch it.
+
+**Alternatives considered:** Replacing `mock-llm` as the default backend
+outright; running Ollama as an in-cluster Deployment with a model baked into
+a custom image, mirroring the guardrails ONNX pattern.
+
+**Why:** Ollama is zero-cost and local, so — unlike a paid provider — there's
+no reason not to have it available; but the mock stays the default for the
+reasons in the "Upstream LLM" section of the design brief: near-zero
+footprint, deterministic responses for e2e assertions, and no dependency for
+CI to satisfy. Running Ollama in-cluster was rejected mainly on RAM budget
+grounds — reaching out to the host's already-running Ollama via
+`host.docker.internal` (verified empirically: a pod resolves it through
+CoreDNS's forwarder and reaches the host's Ollama server successfully) costs
+nothing extra in the cluster. The one portability caveat: `host.docker.internal`
+is a Docker Desktop mechanism (macOS/Windows) — on plain Linux Docker it
+would need an explicit `extraHosts` entry on the kind node to resolve.

@@ -29,3 +29,8 @@ tasks:
     desc: Apply first-party Kubernetes manifests via Kustomize
     cmds:
       - kubectl --kubeconfig terraform/envs/local/kubeconfig apply -k k8s/overlays/local
+
+  apply-manifests-ollama:
+    desc: Apply first-party manifests with the chat route pointed at local Ollama instead of the mock LLM
+    cmds:
+      - kubectl --kubeconfig terraform/envs/local/kubeconfig apply -k k8s/overlays/local-ollama
