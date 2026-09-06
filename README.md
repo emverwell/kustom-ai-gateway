@@ -21,9 +21,9 @@ client → agentgateway proxy ──→ guardrails webhook (Presidio + ONNX)
 
 ## Status
 
-Work in progress, built one step at a time. Cluster provisioning and the
-Gateway API + agentgateway control plane are done; the mock LLM route,
-guardrails service, and observability stack are next.
+Work in progress, built one step at a time. Cluster provisioning, the
+Gateway API + agentgateway control plane, and the mock LLM route are done; the
+guardrails service and observability stack are next.
 
 ## Requirements
 
@@ -50,15 +50,24 @@ task up
 ```
 
 Currently this provisions the two-node (`control-plane` + `worker`) kind
-cluster, installs the Gateway API CRDs, and installs the agentgateway control
-plane via Terraform. The mock LLM route, guardrails service, and observability
-stack land in later steps.
+cluster, installs the Gateway API CRDs and agentgateway control plane via
+Terraform, then loads and deploys the mock LLM and its route via Kustomize.
+The guardrails service and observability stack land in later steps.
 
 Point `kubectl` (and any other Kubernetes-aware tool, e.g. `k9s`) at this
 cluster for the rest of the session:
 
 ```
 export KUBECONFIG="$(pwd)/terraform/envs/local/kubeconfig"
+```
+
+Send a chat-completions request through the proxy end-to-end:
+
+```
+kubectl -n kustom-ai-gateway port-forward svc/kustom-ai-gateway 8080:80 &
+curl -s http://localhost:8080/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model": "mock-llm", "messages": [{"role": "user", "content": "hello"}]}'
 ```
 
 ```

@@ -2,10 +2,12 @@ version: "3"
 
 tasks:
   up:
-    desc: Provision the local kind cluster (rest of the stack lands in later steps)
+    desc: Provision the cluster, gateway, and mock LLM route (guardrails/observability land in later steps)
     cmds:
       - terraform -chdir=terraform/envs/local init -input=false
       - terraform -chdir=terraform/envs/local apply -auto-approve
+      - task: load-mock-llm
+      - task: apply-manifests
 
   down:
     desc: Tear down the local kind cluster
@@ -22,3 +24,8 @@ tasks:
     deps: [build-mock-llm]
     cmds:
       - kind load docker-image mock-llm:dev --name kustom-ai-gateway
+
+  apply-manifests:
+    desc: Apply first-party Kubernetes manifests via Kustomize
+    cmds:
+      - kubectl --kubeconfig terraform/envs/local/kubeconfig apply -k k8s/overlays/local
