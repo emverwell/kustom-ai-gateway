@@ -21,16 +21,27 @@ client → agentgateway proxy ──→ guardrails webhook (Presidio + ONNX)
 
 ## Status
 
-Work in progress, built one step at a time. Cluster provisioning (Terraform +
-kind) is done; the gateway, guardrails service, and observability stack are
-next.
+Work in progress, built one step at a time. Cluster provisioning and the
+Gateway API + agentgateway control plane are done; the mock LLM route,
+guardrails service, and observability stack are next.
 
 ## Requirements
 
 - Docker
 - `kind`
 - Terraform
+- `kubectl`
 - [Task](https://taskfile.dev/)
+
+## Pinned versions
+
+| Component | Version |
+| --- | --- |
+| Kubernetes (`kindest/node`) | v1.34.0 |
+| `tehcyx/kind` provider | 0.11.0 |
+| `hashicorp/helm` provider | 3.3.0 |
+| Gateway API (experimental channel) | v1.6.1 |
+| `agentgateway` / `agentgateway-crds` charts | 1.5.0 |
 
 ## Quickstart
 
@@ -39,7 +50,8 @@ task up
 ```
 
 Currently this provisions the two-node (`control-plane` + `worker`) kind
-cluster via Terraform. The gateway, guardrails service, and observability
+cluster, installs the Gateway API CRDs, and installs the agentgateway control
+plane via Terraform. The mock LLM route, guardrails service, and observability
 stack land in later steps.
 
 ```

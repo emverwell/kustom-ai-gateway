@@ -10,3 +10,11 @@ module "cluster" {
   node_image      = local.node_image
   kubeconfig_path = "${path.module}/kubeconfig"
 }
+
+module "gateway" {
+  source = "../../modules/gateway"
+
+  kubeconfig_path = module.cluster.kubeconfig_path
+
+  depends_on = [module.cluster]
+}

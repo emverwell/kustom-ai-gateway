@@ -133,3 +133,28 @@ they're evidence that policy-as-code and supply-chain practices are second
 nature, which is exactly the "evidence of judgement" signal the repo is
 optimizing for. The cost is low (all open-source, all run in free GitHub
 Actions minutes) and the signal is high.
+
+## ADR-009: Helm installs stay in Terraform — no ArgoCD / GitOps
+
+**Decision:** The Gateway API CRDs and the agentgateway Helm charts are
+installed by Terraform (`terraform/modules/gateway`), applied synchronously
+as part of `terraform apply`.
+
+**Alternatives considered:** Installing them via ArgoCD instead, with
+Terraform (or a bootstrap script) only standing up ArgoCD itself, and the
+rest of the stack defined as ArgoCD `Application` resources synced from this
+repo.
+
+**Why:** GitOps earns its cost when there's drift to reconcile across
+multiple environments or operators over time — this repo has exactly one
+environment, one operator, and a cluster that's destroyed and rebuilt each
+session, so there's nothing to drift. Adding ArgoCD would also introduce a
+bootstrap chicken-and-egg (something still has to install ArgoCD before it
+can take over), turn `task up`'s single synchronous `terraform apply` into a
+race against an async reconciliation loop a 5-minute reviewer could catch
+mid-sync, split teardown ownership between Terraform and ArgoCD (complicating
+the clean `terraform destroy` `task down` relies on), and add a nontrivial
+RAM cost on top of an already-tight 8GB budget shared with guardrails, OTel,
+Prometheus, and Grafana. Recognizing that a popular pattern doesn't fit a
+single-environment ephemeral demo is itself the judgement signal this ADR is
+recording.
