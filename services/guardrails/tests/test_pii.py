@@ -52,6 +52,10 @@ def test_v_prefixed_cedula_is_redacted(engine):
     assert verdict.decision == "allow"
     assert "VE_CEDULA" in verdict.entities_found
     assert "<VE_CEDULA>" in verdict.text
+    # Regression guard: a plain 8-digit cedula with no check-digit suffix
+    # must not also match VE_RIF (greedy-quantifier backtracking previously
+    # let it "steal" the cedula's last digit as a fake check digit).
+    assert "VE_RIF" not in verdict.entities_found
 
 
 def test_bare_digits_with_cedula_context_are_redacted(engine):

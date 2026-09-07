@@ -43,9 +43,16 @@ entities:
 
   # Venezuelan tax ID (RIF): a cedula plus a trailing check digit for the
   # tax region/office, e.g. V-15123456-0 or V151234560.
+  #
+  # The two alternatives are deliberately exhaustive rather than "optional
+  # hyphens everywhere": V-?\d{6,8}-?\d would let greedy backtracking treat
+  # a plain 8-digit cedula's last digit as a fake "check digit" (matches
+  # "V-15123456" with no suffix at all as if it were a RIF). Requiring
+  # either both hyphens or exactly 9 concatenated digits removes that
+  # ambiguity instead of just tightening the score.
   VE_RIF:
     action: redact
     patterns:
       - name: v_prefixed_with_check_digit
-        regex: "(?i)\\bV-?\\d{6,8}-?\\d\\b"
+        regex: "(?i)\\bV(?:-\\d{6,8}-\\d|\\d{9})\\b"
         score: 0.85
