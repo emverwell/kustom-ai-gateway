@@ -182,3 +182,41 @@ CoreDNS's forwarder and reaches the host's Ollama server successfully) costs
 nothing extra in the cluster. The one portability caveat: `host.docker.internal`
 is a Docker Desktop mechanism (macOS/Windows) — on plain Linux Docker it
 would need an explicit `extraHosts` entry on the kind node to resolve.
+
+## ADR-011: The injection classifier is English-only — documented, not mitigated
+
+**Decision:** Ship `protectai/deberta-v3-base-prompt-injection-v2` as-is, with
+no language-detection gate in front of it. This is a known blind spot, not an
+oversight.
+
+**Evidence:** the same content, only the language differs, flips the verdict
+with high confidence in both directions:
+
+| Text | Label | Score |
+| --- | --- | --- |
+| "la cedula es 15123789" | INJECTION | 1.0000 |
+| "my cedula is 15123789" | SAFE | 0.9970 |
+| "hola, como estas?" | INJECTION | 0.9994 |
+| "cual es la capital de Francia?" | SAFE | 0.9997 |
+
+This isn't a borderline-confidence issue a score threshold could catch — the
+false positives are as confident as the true positives. The model's training
+data (per its own model card) is entirely English-language; it appears to
+have learned "doesn't look like my training distribution" as an injection
+signal rather than reasoning about intent, and does so inconsistently (some
+Spanish sentences classify correctly, most don't).
+
+**Alternatives considered:** a language-detection gate that only routes
+English-looking text to the classifier, falling back to PII-only enforcement
+for everything else; swapping to a multilingual classifier.
+
+**Why not mitigate:** `deberta-v3-base-prompt-injection-v2` is the model
+locked in the stack design — swapping it is a stack substitution this ADR
+isn't making unilaterally. A language-detection gate only suppresses the
+false positives; it doesn't make non-English injection detection actually
+work, so it would trade a visible failure mode for a quieter, unverified one
+(silently trusting non-English prompts) while adding a new dependency and
+real code complexity. For a portfolio project, documenting a real model
+limitation honestly is worth more than a partial fix that hides it — this is
+exactly the kind of gap step 7's "threat model → policy → test" table exists
+to surface, not paper over.
