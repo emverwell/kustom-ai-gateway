@@ -22,6 +22,10 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 
+# Models fetched by scripts/fetch_model.py — pinned by commit SHA in the
+# script itself, not committed (the ONNX file alone is ~700MB)
+.models/
+
 # Secrets — commit .env.example only
 .env
 *.env
