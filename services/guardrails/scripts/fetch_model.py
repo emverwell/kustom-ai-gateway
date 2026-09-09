@@ -6,6 +6,8 @@ No conversion happens here — the repo already ships an ONNX export.
 """
 
 import sys
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -21,6 +23,21 @@ FILES = [
     "onnx/added_tokens.json",
 ]
 DEST = Path(__file__).resolve().parent.parent / ".models" / "prompt-injection"
+MAX_ATTEMPTS = 4
+
+
+def fetch_with_retries(url: str, dest: Path) -> None:
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            urllib.request.urlretrieve(url, dest)
+            return
+        except (urllib.error.URLError, urllib.error.ContentTooShortError, OSError) as e:
+            dest.unlink(missing_ok=True)  # don't leave a truncated file behind
+            if attempt == MAX_ATTEMPTS:
+                raise
+            wait = 2**attempt
+            print(f"  attempt {attempt} failed ({e}); retrying in {wait}s")
+            time.sleep(wait)
 
 
 def main():
@@ -29,7 +46,7 @@ def main():
         url = f"https://huggingface.co/{REPO}/resolve/{REVISION}/{f}"
         dest = DEST / Path(f).name
         print(f"fetching {url} -> {dest}")
-        urllib.request.urlretrieve(url, dest)
+        fetch_with_retries(url, dest)
 
 
 if __name__ == "__main__":
